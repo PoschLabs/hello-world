@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Install cargo-zigbuild
+        run: cargo install --locked cargo-zigbuild
+
+      - name: Install Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.13.0
+
+      - name: Clean Zig cache
+        run: rm -rf .zig-cache
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean --skip=publish
+        env:
+          CARGO_HOME: /home/runner/.cargo
+          CARGO_INCREMENTAL: 0
+          CARGO_TERM_COLOR: always
+          ZIG_GLOBAL_CACHE_DIR: ${{ runner.temp }}/zig-global-cache
+          ZIG_LOCAL_CACHE_DIR: ${{ runner.temp }}/zig-local-cache
+
+      - name: Upload unsigned packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-linux-packages
+          path: |
+            dist/*.rpm
+            dist/*.deb
+          if-no-files-found: error
+
+
+  release:
+    needs: build
+    permissions:
+      id-token: write
+      contents: read
+    uses: PoschLabs/release-packages/.github/workflows/release.yml@v1
+    with:
+      server-url: ${{ vars.PACKAGE_SERVER_URL }}
+      artifact-name: unsigned-linux-packages
+    secrets:
+      server-username: ${{ secrets.PACKAGE_SERVER_USERNAME }}
+      server-password: ${{ secrets.PACKAGE_SERVER_PASSWORD }}

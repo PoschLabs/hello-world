@@ -1,0 +1,42 @@
+version: 2
+
+project_name: hello-repo
+
+builds:
+  - id: hello-repo
+    builder: rust
+    binary: hello-repo
+    flags:
+      - --release
+    targets:
+      - x86_64-unknown-linux-gnu
+
+archives:
+  - formats:
+      - tar.gz
+
+nfpms:
+  - id: linux-packages
+    package_name: hello-repo
+    ids:
+      - hello-repo
+
+    vendor: Johannes Posch
+    homepage: https://github.com/JohannesPosch/hello-repo
+    maintainer: Johannes Posch
+    description: Test Rust application for package publishing.
+    license: MIT
+
+    formats:
+      - deb
+      - rpm
+
+    bindir: /usr/bin
+
+checksum:
+  name_template: checksums.txt
+
+release:
+  github:
+    owner: JohannesPosch
+    name: hello-repo
