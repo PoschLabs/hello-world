@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+-[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 permissions:
   contents: read
@@ -33,27 +33,6 @@ jobs:
 
       - name: Clean Zig cache
         run: rm -rf .zig-cache
-
-      - name: 	Determine package version
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          tag="${GITHUB_REF_NAME}"
-
-          if [[ ! "$tag" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)$ ]]; then
-            echo "::error::Invalid package tag: $tag"
-            exit 1
-          fi
-
-          version="${BASH_REMATCH[1]}"
-          release="${BASH_REMATCH[2]}"
-
-          echo "GORELEASER_CURRENT_TAG=v${version}" >> "$GITHUB_ENV"
-          echo "PACKAGE_RELEASE=${release}" >> "$GITHUB_ENV"
-
-          echo "Software version: ${version}"
-          echo "Package release: ${release}"
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v7

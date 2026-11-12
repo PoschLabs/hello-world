@@ -21,7 +21,7 @@ nfpms:
     ids:
       - hello-repo
 
-    release: "${PACKAGE_RELEASE}"
+    release: 1
 
     vendor: Johannes Posch
     homepage: https://github.com/JohannesPosch/hello-repo
